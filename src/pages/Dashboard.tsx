@@ -29,6 +29,8 @@ interface Booking {
   vehicle: string;
   startTime?: string;
   endTime?: string;
+  bookingDate: string,
+  bookingTime: string,
   totalDuration?: number;
 }
 
@@ -59,7 +61,7 @@ const Dashboard: React.FC = () => {
   };
 
   // =============================
-  // 📦 Fetch Recent Bookings
+  // Fetch Recent Bookings
   // =============================
   const fetchRecentBookings = async () => {
     try {
@@ -129,25 +131,25 @@ const Dashboard: React.FC = () => {
   // 🔁 Auto-Resume Timer From Backend
   // =============================
   useEffect(() => {
-  // Find active booking
-  const activeBooking = recentBookings.find(
-    (b) => b.bookingStatus === "started" && b.startTime && !b.endTime
-  );
+    // Find active booking
+    const activeBooking = recentBookings.find(
+      (b) => b.bookingStatus === "started" && b.startTime && !b.endTime
+    );
 
-  if (activeBooking && activeBooking.startTime) {
-    setActiveBookingId(activeBooking._id);
+    if (activeBooking && activeBooking.startTime) {
+      setActiveBookingId(activeBooking._id);
 
-    // Safely calculate elapsed seconds
-    const start = new Date(activeBooking.startTime);
-    const now = new Date();
-    const elapsedSeconds = Math.floor((now.getTime() - start.getTime()) / 1000);
+      // Safely calculate elapsed seconds
+      const start = new Date(activeBooking.startTime);
+      const now = new Date();
+      const elapsedSeconds = Math.floor((now.getTime() - start.getTime()) / 1000);
 
-    setElapsedTime(elapsedSeconds);
-  } else {
-    setActiveBookingId(null);
-    setElapsedTime(0);
-  }
-}, [recentBookings]);
+      setElapsedTime(elapsedSeconds);
+    } else {
+      setActiveBookingId(null);
+      setElapsedTime(0);
+    }
+  }, [recentBookings]);
 
   // =============================
   // 📲 Fetch Data Initially
@@ -212,8 +214,8 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
         {home_pages.map((item, index) => (
           <div
-            onClick={() => navigate(`${item.link}`)}
             key={index}
+            onClick={() => navigate(`/dashboard/bookings?filter=${item.link}`)}
             className="bg-white cursor-pointer rounded-xl relative shadow-md p-6 h-48 flex flex-col justify-between"
           >
             <div
@@ -230,6 +232,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         ))}
+
       </div>
 
       {/* Live Timer Display */}
@@ -260,44 +263,38 @@ const Dashboard: React.FC = () => {
           <tbody>
             {recentBookings.length > 0 ? (
               recentBookings.map((booking) => {
-                const date = new Date(booking.createdAt).toLocaleDateString();
-                const time = new Date(booking.createdAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
-
+               
                 return (
                   <tr key={booking._id} className="border-b border-gray-300 hover:bg-gray-50 transition">
-                    <td className="px-3 py-2 font-semibold text-gray-700">
+                    <td className="px-3 min-w-[90px] py-2 font-semibold text-gray-700">
                       #{booking._id.slice(-6)}
                     </td>
-                    <td className="px-3 py-5">
+                    <td className="px-3 min-w-[120px] py-5">
                       {booking.user
                         ? `${booking.user.firstName} ${booking.user.lastName}`
                         : "—"}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="min-w-[120px] px-3 py-2">
                       {booking.pickupLocation} → {booking.dropoffLocation}
                     </td>
-                    <td className="px-3 py-2">{date}</td>
-                    <td className="px-3 py-2">{time}</td>
-                    <td className="px-3 py-2">{booking.vehicle}</td>
+                    <td className="px-3 py-2 min-w-[100px]">{booking.bookingDate}</td>
+                    <td className="px-3 py-2min-w-[100px]">{booking.bookingTime}</td>
+                    <td className="px-3 py-2 min-w-[100px]">{booking.vehicle}</td>
                     <td className="px-3 py-2 capitalize">{booking.bookingStatus}</td>
                     <td
-                      className={`px-3 py-2 font-semibold ${
-                        booking.paymentStatus === "paid"
-                          ? "text-green-600"
-                          : "text-red-500"
-                      }`}
+                      className={`px-3 py-2 font-semibold ${booking.paymentStatus === "paid"
+                        ? "text-green-600"
+                        : "text-red-500"
+                        }`}
                     >
                       {booking.paymentStatus}
                     </td>
 
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-2 min-w-[120px] ">
                       {booking.bookingStatus === "assigned" && (
                         <button
                           onClick={() => handleStartBooking(booking._id)}
-                          className="bg-blue-500 text-white px-3 py-1 rounded text-xs"
+                          className="bg-blue-500 text-white px- py-1 rounded text-xs"
                         >
                           Start Booking
                         </button>

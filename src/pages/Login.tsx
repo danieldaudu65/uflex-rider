@@ -87,14 +87,12 @@ const Login: React.FC = () => {
 
         toast.success(response.message || "Login successful!");
         setModal(true);
-        setTimeout(() => navigate("/dashboard"), 2000);
+        navigate("/dashboard"); // 🚀 Navigate immediately — no delay
       } else {
         toast.success(response.message || "Signup successful! Please login.");
         setModal(true);
-        setTimeout(() => {
-          setModal(false);
-          setIsLogin(true);
-        }, 2000);
+        setModal(false);
+        setIsLogin(true); // Switch to login mode immediately
       }
     } catch (err: any) {
       const elapsed = Date.now() - startTime;
@@ -108,6 +106,7 @@ const Login: React.FC = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row justify-center items-center md:items-stretch bg-gray-50">
@@ -240,9 +239,8 @@ const Login: React.FC = () => {
             type="button"
             onClick={handleSubmit}
             disabled={loading}
-            className={`w-full bg-[#FE752B] text-black font-bold py-3 rounded-md hover:opacity-90 transition ${
-              loading && "opacity-70 cursor-not-allowed"
-            }`}
+            className={`w-full bg-[#FE752B] text-black font-bold py-3 rounded-md hover:opacity-90 transition ${loading && "opacity-70 cursor-not-allowed"
+              }`}
           >
             {loading ? "Processing..." : isLogin ? "Log in" : "Create Account"}
           </button>

@@ -1,69 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { bell, userLogin } from "../assets";
 import Search from "../components/Search";
 import { FaChevronDown } from "react-icons/fa";
-
-// Rider details
-export type Rider = {
-  id: string;
-  name: string;
-  phone?: string;
-  vehicle?: string;
-};
-
-// The person who booked
-export type Customer = {
-  id: string;
-  name: string;
-  email?: string;
-  phone: string;
-  totalBookings?: number;
-};
-
-// The booking itself
-export type Booking = {
-  id: string;
-  fromLocation: string;
-  toLocation: string;
-  date: string;
-  time: string;
-  vehicle: string;
-  status: string;
-  paymentStatus: string;
-  customer: Customer;
-  rider?: Rider; // optional
-};
+import { toast } from "react-hot-toast";
+import { apiRequest } from "../utils/api";
 
 const BookingPage: React.FC = () => {
+  const { state } = useLocation();
+  const navigate = useNavigate();
+  const { id } = useParams();
   const [open, setOpen] = useState(false);
+  const [booking, setBooking] = useState<any>(state?.booking || null);
 
-  // Hardcoded booking data (for frontend only)
-  const booking: Booking = {
-    id: "B001",
-    fromLocation: "Lagos",
-    toLocation: "Abuja",
-    date: "2025-09-28",
-    time: "10:30 AM",
-    vehicle: "Toyota Corolla",
-    status: "Completed",
-    paymentStatus: "Paid",
-    customer: {
-      id: "C001",
-      name: "John Doe",
-      email: "john@example.com",
-      phone: "+2348012345678",
-      totalBookings: 5,
-    },
-    rider: {
-      id: "R001",
-      name: "Michael Rider",
-      phone: "+2348098765432",
-      vehicle: "Honda Civic",
-    },
-  };
+  // Fallback — if user reloads the page (no state), fetch by ID
+  useEffect(() => {
+    if (!booking && id) {
+      (async () => {
+        try {
+          const data = await apiRequest(`/bookingController/bookings/${id}`, "GET");
+          setBooking(data.booking);
+        } catch (err) {
+          toast.error("Failed to fetch booking details");
+          navigate("/dashboard/bookings");
+        }
+      })();
+    }
+  }, [id, booking]);
+
+  if (!booking) return <p className="text-gray-500">Loading booking...</p>;
 
   return (
-    <div className="p-6 bg-white h-full space-y-6 slim-scrollbar w-full">
+    <div className="p-6 bg-white h-full space-y-6 w-full">
       {/* Header */}
       <div className="flex relative justify-center items-center">
         <h1 className="font-extrabold text-lg">Booking</h1>
@@ -77,17 +45,17 @@ const BookingPage: React.FC = () => {
 
       {/* User (Booker) Card */}
       <div className="border border-gray-200 rounded-lg p-4 shadow-sm">
-        <h2 className="text-lg font-bold">{booking.customer.name}</h2>
-        <p className="text-gray-600">{booking.customer.email ?? "No email"}</p>
+        <h2 className="text-lg font-bold">{booking.user?.firstName}</h2>
+        <p className="text-gray-600">{booking.user?.email ?? "No email"}</p>
 
         <div className="mt-3 space-y-1 text-sm">
           <p className="flex justify-between">
             <span className="font-medium">Phone Number:</span>{" "}
-            {booking.customer.phone}
+            {booking.user?.phone}
           </p>
           <p className="flex justify-between">
             <span className="font-medium">Total Bookings:</span>{" "}
-            {booking.customer.totalBookings ?? 1}
+            {booking.customer?.totalBookings ?? 1}
           </p>
         </div>
 
@@ -99,9 +67,7 @@ const BookingPage: React.FC = () => {
           >
             <h3 className="font-semibold">Booking Details</h3>
             <FaChevronDown
-              className={`transition-transform duration-300 ${
-                open ? "rotate-180" : ""
-              }`}
+              className={`transition-transform duration-300 ${open ? "rotate-180" : ""}`}
             />
           </div>
 
@@ -113,17 +79,17 @@ const BookingPage: React.FC = () => {
             <div className="space-y-3">
               <div className="border rounded-md border-gray-200 p-3 text-sm shadow-sm">
                 <p className="flex justify-between">
-                  <span className="font-medium">Booking ID:</span> {booking.id}
+                  <span className="font-medium">Booking ID:</span> {booking._id}
                 </p>
                 <p className="flex justify-between">
                   <span className="font-medium">From - To:</span>{" "}
-                  {booking.fromLocation} - {booking.toLocation}
+                  {booking.pickupLocation} - {booking.dropoffLocation}
                 </p>
                 <p className="flex justify-between">
-                  <span className="font-medium">Date:</span> {booking.date}
+                  <span className="font-medium">Date:</span> {booking.bookingDate}
                 </p>
                 <p className="flex justify-between">
-                  <span className="font-medium">Time:</span> {booking.time}
+                  <span className="font-medium">Time:</span> {booking.bookingTime}
                 </p>
                 <p className="flex justify-between">
                   <span className="font-medium">Vehicle:</span> {booking.vehicle}
@@ -131,7 +97,7 @@ const BookingPage: React.FC = () => {
                 <p className="flex justify-between">
                   <span className="font-medium">Status:</span>
                   <span className="text-green-600 font-medium">
-                    {booking.status}
+                    {booking.bookingStatus}
                   </span>
                 </p>
                 <p className="flex justify-between">
